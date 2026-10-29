@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pull the String - Bulb</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ead5a0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            user-select: none;
+        }
+
+        .scene {
+            position: relative;
+            width: 200px;
+            height: 390px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bulb {
+            width: 120px;
+            height: 140px;
+            background: #dff09a;
+            border: 4px solid #222;
+            border-radius: 50% 50% 43% 43%;
+            position: relative;
+            z-index: 2;
+            transition: background 0.25s, box-shadow 0.25s;
+            box-shadow: 0 0 65px 20px #f8f4a3;
+        }
+
+        .bulb::after {
+            content: "";
+            position: absolute;
+            bottom: -27px;
+            left: 28px;
+            width: 55px;
+            height: 30px;
+            background: #aaa;
+            border: 3px solid #222;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .bulb.off {
+            background: #888;
+            box-shadow: none;
+        }
+
+        .bulb.off::after {
+            background: #666;
+        }
+
+        .wire {
+            position: absolute;
+            top: 135px;
+            width: 4px;
+            height: 30px;
+            background: #222;
+            z-index: 3;
+        }
+
+        .string {
+            position: absolute;
+            top: 162px;
+            left: 98px;
+            width: 4px;
+            height: 140px;
+            background: #222;
+            touch-action: none;
+            cursor: grab;
+            z-index: 4;
+        }
+
+        .string:active {
+            cursor: grabbing;
+        }
+
+        .handle {
+            position: absolute;
+            bottom: -9px;
+            left: -7px;
+            width: 18px;
+            height: 18px;
+            background: #444;
+            border: 2px solid #222;
+            border-radius: 50%;
+        }
+
+        .hint {
+            position: absolute;
+            top: 325px;
+            width: 280px;
+            text-align: center;
+            color: #493c25;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scene">
+        <div class="bulb" id="bulb"></div>
+        <div class="wire"></div>
+
+        <div class="string" id="string">
+            <div class="handle"></div>
+        </div>
+
+        <div class="hint">
+            <p>Pull the string down and release!</p>
+            <p>Bulb: <span class="status" id="status">ON</span></p>
+        </div>
+    </div>
+
+    <script>
+        const string = document.getElementById("string");
+        const bulb = document.getElementById("bulb");
+        const status = document.getElementById("status");
+
+        let isDragging = false;
+        let startY = 0;
+        let pullDistance = 0;
+        let isOn = true;
+
+        string.addEventListener("pointerdown", function(event) {
+            isDragging = true;
+            startY = event.clientY;
+            pullDistance = 0;
+
+            string.setPointerCapture(event.pointerId);
+        });
+
+        string.addEventListener("pointermove", function(event) {
+            if (!isDragging) return;
+
+            pullDistance = Math.max(
+                0,
+                Math.min(event.clientY - startY, 100)
+            );
+
+            string.style.height = (140 + pullDistance) + "px";
+        });
+
+        function releaseString() {
+            if (!isDragging) return;
+
+            isDragging = false;
+
+            if (pullDistance > 35) {
+                isOn = !isOn;
+                bulb.classList.toggle("off", !isOn);
+                status.textContent = isOn ? "ON" : "OFF";
+            }
+
+            string.style.height = "140px";
+            pullDistance = 0;
+        }
+
+        string.addEventListener("pointerup", releaseString);
+        string.addEventListener("pointercancel", releaseString);
+    </script>
+
+</body>
+</html>
